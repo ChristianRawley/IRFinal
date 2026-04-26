@@ -1,0 +1,54 @@
+Build a document search program that will search through and return a list of relevant documents.  Your program should have the following specifications:
+
+Build using Java.  Can operate via console or GUI, your choice.
+The program should implement the following functionality:
+Build new database - The user should have the option of building (or rebuilding) the database.  Selecting this option will create an inverted index of all documents within a specified folder.  Save the index for future queries, overwriting any old index.  Should also confirm user wants to do this before proceeding.
+Query database - Parse the user's query and perform an appropriate search of the index.  Return the best X documents, where X is a configurable value.  You can have the value be adjusted in a menu option or by asking the user at the time of search.
+Rank the documents using BM25.  You may instead use a more advanced algorithm (or a combination of algorithms) if you want (consult the professor to make sure your definition of "more advanced" is valid).  If you do, bonus points can be added depending on how much more advanced it is.
+Display the list of documents in order from best fit to worst.
+Display document - Allow the user to open any of the returned documents (clicking on a link to the document for GUI interfaces, selecting from a menu for console interfaces, etc).
+
+
+The completed project is due by midnight on the day of the final (Tuesday May 12th).  Late submissions won't be accepted because I'll need a few days to play with your programs.
+
+
+
+The information in this assignment may be updated in the future.  I'll let you know in class if it does.
+
+
+
+Here's a fictional example of what a console version of the program might look like:
+
+Welcome to Totally Modern Retrieval System.
+  1. Perform a query
+  2. Rebuild the database
+  3. Settings
+  0. Quit
+What would you like to do? 1
+Please enter your query: dogs with funny hats
+ 
+Here is our list of the 10 most relevant documents about dogs with funny hats:
+  1. The Beret That Barked Back
+  2. Why Your Dog Looks Judgy in a Fedora
+  3. Beanies and Zoomies: Winter Fashion Gone Wrong
+  4. When Your Dog Wears a Sombrero Better Than You Do
+  5. Santa Paws Is Real and He's Wearing a Crooked Hat
+  6. Graduation Caps and Zero Kibble: A Puppy's Life
+  7. The Cone of Shame vs The Jester Hat
+  8. The Corgi Who Thought He Was A Cowboy
+  9. The Helmet Wasn't Regulation, But the Dog Didn't Care
+ 10. The Viking Helmet Debacle: Who Gave the Dachshund an Axe?
+Select which document you would like to open (or select 0 to return to main menu): 0
+ 
+Welcome to Totally Modern Retrieval System.
+  1. Perform a query
+  2. Rebuild the database
+  3. Settings
+  0. Quit
+What would you like to do? 3
+ 
+Settings:
+  1. Adjust returned list length
+  2. Select path for data files
+  0. Return to main menu
+What would you like to do?
