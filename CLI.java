@@ -1,14 +1,18 @@
+import java.io.IOException;
 import java.util.Scanner;
 
 public class CLI {
     int listLength;
     String path;
     Scanner scan;
+    Tokenizer tokenizer;
 
-    public CLI() {
+    public CLI() throws IOException {
         listLength = 10;
         path = "./data/";
         scan = new Scanner(System.in);
+        tokenizer = new Tokenizer(path);
+        tokenizer.build();
     }
 
     int readInt(String prompt) {
@@ -23,11 +27,19 @@ public class CLI {
     }
 
     public void runQuery() {
-
+        System.out.println("Please enter your query:");
+        String query = scan.nextLine().trim();
+        System.out.println("Here is our list of the " + listLength + " most relevant documents about " + query + ":");
+        BM25 bm25 = new BM25(this, tokenizer, query);
+        for (BM25.ScoredDoc doc : bm25.topKDocs()) {
+            System.out.println(doc.name + " with score " + doc.score);
+        }
     }
 
-    public void rebuild() {
-
+    public void rebuild() throws IOException {
+        System.out.println("Rebuilding...");
+        tokenizer.build();
+        System.out.println("Build complete.");
     }
 
     public void settings() {
@@ -43,7 +55,7 @@ public class CLI {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         CLI cli = new CLI();
         while (true) {
             System.out.println("\nWelcome to Totally Modern Retrieval System.");
