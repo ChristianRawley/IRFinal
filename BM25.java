@@ -1,6 +1,7 @@
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 public class BM25 {
     Tokenizer tokenizer;
@@ -16,15 +17,17 @@ public class BM25 {
     }
 
     public List<ScoredDoc> topKDocs() {
-        ArrayList<ScoredDoc> results = new ArrayList<>();
+        PriorityQueue<ScoredDoc> heap = new PriorityQueue<>((x, y) -> Double.compare(y.score, x.score));
         File[] files = new File(cli.path).listFiles();
         for (File file : files) {
             if (!file.isFile()) continue;
-            double score = scoreDocument(file);
-            if (score > 0) results.add(new ScoredDoc(file.getName(), score));
+            heap.offer(new ScoredDoc(file.getName(), scoreDocument(file)));
         }
-        results.sort((a, b) -> Double.compare(b.score, a.score));
-        return results.subList(0, Math.min(cli.listLength, results.size()));
+        List<ScoredDoc> top = new ArrayList<>();
+        while (!heap.isEmpty() && top.size() < cli.listLength) {
+            top.add(heap.poll());
+        }
+        return top;
     }
 
     private double scoreDocument(File doc) {
@@ -35,7 +38,7 @@ public class BM25 {
             double idf = 0.0;
             int tf = 0;
             if (tokenizer.getIndex().get(token) != null) {
-                idf = Math.log((double)tokenizer.getDocCount()/(double)(tokenizer.getIndex().get(token).size() + 1));
+                idf = Math.log(((double)(tokenizer.getDocCount() - tokenizer.getIndex().get(token).size()) + 0.5) / ((double)tokenizer.getIndex().get(token).size() + 0.5) + 1);
                 tf = tokenizer.getIndex().get(token).getOrDefault(tokenizer.getDocNames().indexOf(doc.getName()), 0);
             }
             int docLength = tokenizer.getDocLengths().get(tokenizer.getDocNames().indexOf(doc.getName()));
@@ -53,4 +56,3 @@ public class BM25 {
         }
     }
 }
-
