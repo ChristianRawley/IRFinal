@@ -1,4 +1,7 @@
+import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 public class CLI {
@@ -12,7 +15,8 @@ public class CLI {
         path = "./data/";
         scan = new Scanner(System.in);
         tokenizer = new Tokenizer(path);
-        tokenizer.build();
+        if (new File("persist.txt").exists()) tokenizer.load();
+        else tokenizer.build();
     }
 
     int readInt(String prompt) {
@@ -31,13 +35,35 @@ public class CLI {
         String query = scan.nextLine().trim();
         System.out.println("Here is our list of the " + listLength + " most relevant documents about " + query + ":");
         BM25 bm25 = new BM25(this, tokenizer, query);
-        for (BM25.ScoredDoc doc : bm25.topKDocs()) {
-            System.out.println(doc.name + " with score " + doc.score);
+        List<BM25.ScoredDoc> results = bm25.topKDocs();
+        for (int i = 0; i < results.size(); i++) {
+            System.out.println((i + 1) + ". " + results.get(i).name);
+        }
+        while (true) {
+            int choice = readInt("Select which document you would like to open (or select 0 to return to main menu): ");
+            if (choice == 0) return;
+            if (choice < 1 || choice > results.size()) {
+                System.out.println("Invalid selection.");
+                continue;
+            }
+            try {
+                Desktop.getDesktop().open(new File(path, results.get(choice - 1).name));
+            } catch (IOException e) {
+                System.out.println("Could not open file: " + e.getMessage());
+            }
         }
     }
 
     public void rebuild() throws IOException {
-        System.out.println("Rebuilding...");
+        System.out.println("This will build a new inverted index from files in '" + path + "', overwriting any existing index.");
+        System.out.println("Are you sure? (y/n)");
+        String answer = scan.nextLine().trim().toLowerCase();
+        if (!answer.equals("y") && !answer.equals("yes")) {
+            System.out.println("Cancelled.");
+            return;
+        }
+        tokenizer.setPath(path);
+        System.out.println("Building...");
         tokenizer.build();
         System.out.println("Build complete.");
     }

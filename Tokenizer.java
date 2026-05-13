@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,8 +49,59 @@ public class Tokenizer {
         }
         if (docLengths.isEmpty()) avgDocLength = 0;
         else avgDocLength = (double) total / docLengths.size();
-        // also needs to rewrite to a new file called persistent.txt
-        // needs a persist() method that loads everything from this persistent.txt for fresh compiles
+        persist();
+    }
+
+    private void persist() throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("persist.txt"))) {
+            bw.write("!-- AVERAGE DOC LENGTH --!");
+            bw.newLine();
+            bw.write(String.valueOf(avgDocLength));
+            bw.newLine();
+            bw.write("!-- DOC LENGTHS --!");
+            bw.newLine();
+            for (int i = 0; i < docNames.size(); i++) {
+                bw.write(docNames.get(i) + ":" + docLengths.get(i));
+                bw.newLine();
+            }
+            bw.write("!-- TERMS --!");
+            bw.newLine();
+            for (Map.Entry<String, Map<Integer, Integer>> term : index.entrySet()) {
+                for (Map.Entry<Integer, Integer> posting : term.getValue().entrySet()) {
+                    bw.write(term.getKey() + ":" + posting.getKey() + ":" + posting.getValue());
+                    bw.newLine();
+                }
+            }
+        }
+    }
+
+    public void load() throws IOException {
+        index.clear();
+        docNames.clear();
+        docLengths.clear();
+        String section = "";
+        try (BufferedReader br = new BufferedReader(new FileReader("persist.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith("!--")) {
+                    section = line;
+                    continue;
+                }
+                if (section.contains("AVERAGE DOC LENGTH")) {
+                    avgDocLength = Double.parseDouble(line);
+                } else if (section.contains("DOC LENGTHS")) {
+                    String[] parts = line.split(":");
+                    docNames.add(parts[0]);
+                    docLengths.add(Integer.parseInt(parts[1]));
+                } else if (section.contains("TERMS")) {
+                    String[] parts = line.split(":");
+                    String term = parts[0];
+                    int docId = Integer.parseInt(parts[1]);
+                    int count = Integer.parseInt(parts[2]);
+                    index.computeIfAbsent(term, k -> new HashMap<>()).put(docId, count);
+                }
+            }
+        }
     }
 
     private void tokenize(File file, int docId) {
